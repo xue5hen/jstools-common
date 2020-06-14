@@ -1,12 +1,12 @@
 const fs = require('fs')
 const path = require('path')
 const net = require('net')
-// const request = require('request')
+const request = require('request')
 const os = require('os')
-const axios = require('axios')
 const crypto = require('crypto')
+const axios = require('axios')
 const JsZip = require('jszip')
-let toolsWeb = require('./tools-web.js')
+let toolsPublic = require('./tools-public.js')
 
 /*
 * JSON文件读取
@@ -18,7 +18,7 @@ const getJson = (filePath) => {
             if (err) {
                 reject('文件不存在或读取失败')
             } else {
-                resolve(toolsWeb.jsonParse(data))
+                resolve(toolsPublic.jsonParse(data))
             }
         })
     })
@@ -209,24 +209,24 @@ const getFileMd5 = (filePath) => {
 * @param {string} to 目标地址
 * @param {string} contentType 数据类型
 */
-// const uploadFile = ({from, to, contentType}) => {
-//     return new Promise((resolve, reject) => {
-//         request.put({
-//             url: to,
-//             headers: {
-//                 'Content-Type': contentType || 'application/octet-stream'
-//             },
-//             body: fs.readFileSync(from)
-//         }, (error, response, body) => {
-//             if (error) reject(error)
-//             if (response.statusCode === 200) {
-//                 resolve(response)
-//             } else {
-//                 reject(response)
-//             }
-//         })
-//     })
-// }
+const uploadFile = ({from, to, contentType}) => {
+    return new Promise((resolve, reject) => {
+        request.put({
+            url: to,
+            headers: {
+                'Content-Type': contentType || 'application/octet-stream'
+            },
+            body: fs.readFileSync(from)
+        }, (error, response, body) => {
+            if (error) reject(error)
+            if (response.statusCode === 200) {
+                resolve(response)
+            } else {
+                reject(response)
+            }
+        })
+    })
+}
 
 /*
 * 下载文件到本地
@@ -304,30 +304,30 @@ const downloadFileV2 = (from, to, progressCallback) => {
 * @param {string} from 源地址
 * @param {string} to 目标地址
 */
-// const downloadFileV3 = (from, to) => {
-//     return new Promise((resolve, reject) => {
-//         // 检查目标文件夹是否存在
-//         let toDir = path.dirname(to)
-//         if (!fs.existsSync(toDir)) {
-//             fs.mkdirSync(toDir, {recursive: true})
-//         }
-//         // 声明临时文件
-//         let toTemp = `${to}_temp`
-//         let stream = fs.createWriteStream(toTemp)
-//         request(from).on('error', (err) => {
-//             console.log(err)
-//             reject('error')
-//         }).pipe(stream).on('close',() => {
-//             fs.rename(toTemp, to, function (err) {
-//                 if (err) { reject('error') }
-//                 else { resolve('success') }
-//             })
-//         })
-//     }).catch((err) => {
-//         console.log(err)
-//         return 'error'
-//     })
-// }
+const downloadFileV3 = (from, to) => {
+    return new Promise((resolve, reject) => {
+        // 检查目标文件夹是否存在
+        let toDir = path.dirname(to)
+        if (!fs.existsSync(toDir)) {
+            fs.mkdirSync(toDir, {recursive: true})
+        }
+        // 声明临时文件
+        let toTemp = `${to}_temp`
+        let stream = fs.createWriteStream(toTemp)
+        request(from).on('error', (err) => {
+            console.log(err)
+            reject('error')
+        }).pipe(stream).on('close',() => {
+            fs.rename(toTemp, to, function (err) {
+                if (err) { reject('error') }
+                else { resolve('success') }
+            })
+        })
+    }).catch((err) => {
+        console.log(err)
+        return 'error'
+    })
+}
 
 /*
 * 加密数据（解密同）
@@ -432,6 +432,7 @@ const getAvailablePorts = (s_port = 1, count = 1) => {
 }
 
 let toolsNode = {
+    ...toolsPublic,
     getJson,
     copyFile,
     copyDir,
@@ -441,10 +442,10 @@ let toolsNode = {
     writeFile,
     readDir,
     getFileMd5,
-    // uploadFile,
+    uploadFile,
     downloadFile,
     downloadFileV2,
-    // downloadFileV3,
+    downloadFileV3,
     encrypt,
     unzipFile,
     getIpAddress,

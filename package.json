@@ -1,6 +1,6 @@
 {
   "name": "jstools-common",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "实际工作中常用的JS工具函数集（包括Web及NodeJS环境）",
   "main": "src/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "keywords": [
     "jstools"
   ],
-  "author": "xue5hen",
+  "author": "xue5hen <yuanbiao123456@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/xue5hen/jstools-common/issues"
@@ -27,11 +27,13 @@
     "babel-preset-stage-2": "^6.24.1",
     "cross-env": "^7.0.2",
     "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2"
   },
   "dependencies": {
     "axios": "^0.19.2",
     "babel-polyfill": "^6.26.0",
-    "jszip": "^3.4.0"
+    "jszip": "^3.4.0",
+    "request": "^2.88.2"
   }
 }

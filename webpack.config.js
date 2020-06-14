@@ -1,27 +1,33 @@
 const path = require('path')
+const webpackMerge = require('webpack-merge')
 let devMode = (process.env.NODE_ENV === 'production')
 
-module.exports = {
+let baseConfig = {
     mode: devMode ? 'production' : 'development',
     entry: {
         // preload: ['babel-polyfill', './src/index.js']
-        preload: ['./src/index.js']
+        jstools: ['./src/index.js']
     },
     output: {
         library: '$jstools',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'dist'),
-        filename: 'jstools-common.js'
+        filename: '[name].js'
     },
     optimization: {
         runtimeChunk: false,
         minimize: true
     },
     node: {
-        fs: 'empty',
-        net: 'empty',
-        request: 'empty',
         __dirname: false
+    },
+    externals: {
+        fs: 'fs',
+        path: 'path',
+        net: 'net',
+        request: 'request',
+        os: 'os',
+        crypto: 'crypto'
     },
     module: {
         rules: [
@@ -39,3 +45,18 @@ module.exports = {
         }
     }
 }
+
+let targets = ['web', 'node', 'electron-main', 'electron-renderer'].map(target => {
+    let base = webpackMerge(baseConfig, {
+        target: target,
+        output: {
+            library: '$jstools',
+            libraryTarget: 'umd',
+            path: path.resolve(__dirname, 'dist'),
+            filename: `[name].${target}.js`
+        }
+    })
+    return base
+})
+
+module.exports = targets
