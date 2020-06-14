@@ -1,5 +1,6 @@
 const path = require('path')
 const webpackMerge = require('webpack-merge')
+const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 let devMode = (process.env.NODE_ENV === 'production')
 
 let baseConfig = {
@@ -46,8 +47,9 @@ let baseConfig = {
     }
 }
 
-let targets = ['web', 'node', 'electron-main', 'electron-renderer'].map(target => {
-    let base = webpackMerge(baseConfig, {
+let targets = ['web', 'node', 'electron-main', 'electron-renderer']
+let configs = targets.map((target, index) => {
+    let mergeConfig = {
         target: target,
         output: {
             library: '$jstools',
@@ -55,8 +57,13 @@ let targets = ['web', 'node', 'electron-main', 'electron-renderer'].map(target =
             path: path.resolve(__dirname, 'dist'),
             filename: `[name].${target}.js`
         }
-    })
-    return base
+    }
+    if (index === (targets.length - 1)) {
+        mergeConfig.plugins = [
+            new CleanWebpackPlugin()
+        ]
+    }
+    return webpackMerge(baseConfig, mergeConfig)
 })
 
-module.exports = targets
+module.exports = configs
