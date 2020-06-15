@@ -153,6 +153,17 @@ const deepCopy = (data) => {
 }
 
 /**
+* 数组元素交换位置
+* @param {array} arr 数组
+* @param {number} index1 添加项目的位置
+* @param {number} index2 删除项目的位置
+*/
+const swapArray = (arr, index1, index2) => {
+  arr[index1] = arr.splice(index2, 1, arr[index1])[0]
+  return arr
+}
+
+/**
  * 版本对比函数
  * @param {Array} versionArr1 版本1
  * @param {Array} versionArr2 版本2
@@ -245,6 +256,7 @@ export default module.exports = {
     isLeapYear,
     monthDaysCount,
     deepCopy,
+    swapArray,
     compareVersions,
     debounce,
     throttle,
