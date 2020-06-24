@@ -4,13 +4,12 @@ const net = require('net')
 const request = require('request')
 const os = require('os')
 const crypto = require('crypto')
-const axios = require('axios')
 const JsZip = require('jszip')
 let toolsPublic = require('./tools-public.js')
 
-/*
-* JSON文件读取
-* @param {string} filePath 源地址
+/**
+ * JSON文件读取
+ * @param {String} filePath 源地址
 */
 const getJson = (filePath) => {
     return new Promise((resolve, reject) => {
@@ -24,12 +23,12 @@ const getJson = (filePath) => {
     })
 }
 
-/*
-* 文件拷贝
-* @param {string} from 源地址
-* @param {string} to 目标地址
-* @param {boolean} streammode 是否使用流传输
-*/
+/**
+ * 文件拷贝
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
+ * @param {boolean} streammode 是否使用流传输
+ */
 const copyFile = (from, to, streammode = false) => {
     // 检查源文件是否存在
     if (!fs.existsSync(from)) return
@@ -48,12 +47,12 @@ const copyFile = (from, to, streammode = false) => {
     }
 }
 
-/*
-* 目录拷贝
-* @param {string} from 源地址
-* @param {string} to 目标地址
-* @param {boolean} replace 是否覆盖同名文件
-*/
+/**
+ * 目录拷贝
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
+ * @param {boolean} replace 是否覆盖同名文件
+ */
 const copyDir = (from, to, replace = true) => {
     // 检查源路径是否存在
     if (!fs.existsSync(from)) return
@@ -91,10 +90,10 @@ const copyDir = (from, to, replace = true) => {
     })
 }
 
-/*
-* 创建目录
-* @param {string} filePath 目标路径
-*/
+/**
+ * 创建目录
+ * @param {String} filePath 目标路径
+ */
 const mkDir = (filePath) => {
     // 检查目标路径是否存在
     let needCreate = true
@@ -110,10 +109,10 @@ const mkDir = (filePath) => {
     }
 }
 
-/*
-* 删除文件
-* @param {string} filePath 目标路径
-*/
+/**
+ * 删除文件
+ * @param {String} filePath 目标路径
+ */
 const delFile = (filePath) => {
     // 检查源文件是否存在
     if (!fs.existsSync(filePath)) return
@@ -131,11 +130,11 @@ const delFile = (filePath) => {
     }
 }
 
-/*
-* 将数据写入文件
-* @param {string} filePath 目标路径
-* @param {buffer} bufferData 数据
-*/
+/**
+ * 将数据写入文件
+ * @param {String} filePath 目标路径
+ * @param {Buffer} bufferData 数据
+ */
 const writeFileSync = (filePath, bufferData) => {
     // 检查目标文件夹是否存在
     let toDir = path.dirname(filePath)
@@ -145,11 +144,11 @@ const writeFileSync = (filePath, bufferData) => {
     fs.writeFileSync(filePath, bufferData)
 }
 
-/*
-* 将数据写入文件
-* @param {string} filePath 目标路径
-* @param {buffer} bufferData 数据
-*/
+/**
+ * 将数据写入文件
+ * @param {String} filePath 目标路径
+ * @param {Buffer} bufferData 数据
+ */
 const writeFile = (filePath, bufferData) => {
     return new Promise((resolve, reject) => {
         // 检查目标文件夹是否存在
@@ -167,10 +166,10 @@ const writeFile = (filePath, bufferData) => {
     })
 }
 
-/*
-* 读取目录
-* @param {string} filePath 目标路径
-*/
+/**
+ * 读取目录
+ * @param {String} filePath 目标路径
+ */
 const readDir = (filePath) => {
     return new Promise((resolve, reject) => {
         if (!filePath || !fs.existsSync(filePath)) {
@@ -187,10 +186,10 @@ const readDir = (filePath) => {
     })
 }
 
-/*
-* 获取文件MD5值
-* @param {string} filePath 目标路径
-*/
+/**
+ * 获取文件MD5值
+ * @param {String} filePath 目标路径
+ */
 const getFileMd5 = (filePath) => {
     if (!filePath || !fs.existsSync(filePath)) return ''
     try {
@@ -203,12 +202,12 @@ const getFileMd5 = (filePath) => {
     }
 }
 
-/*
-* 上传文件到服务器
-* @param {string} from 源地址
-* @param {string} to 目标地址
-* @param {string} contentType 数据类型
-*/
+/**
+ * 上传文件到服务器
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
+ * @param {String} contentType 数据类型
+ */
 const uploadFile = ({from, to, contentType}) => {
     return new Promise((resolve, reject) => {
         request.put({
@@ -228,23 +227,27 @@ const uploadFile = ({from, to, contentType}) => {
     })
 }
 
-/*
-* 下载文件到本地
-* @param {string} from 源地址
-* @param {string} to 目标地址
-*/
-const downloadFile = (from, to) => {
+/**
+ * 下载文件到本地
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
+ * @param {Function} progressCallback 进度回调函数
+ * @param {Object} config 其它配置
+ */
+const downloadFile = (options) => {
+    let {from, to, progressCallback, config} = options || {}
+    config = config || {}
     return new Promise((resolve, reject) => {
         // 检查目标文件夹是否存在
         let toDir = path.dirname(to)
         if (!fs.existsSync(toDir)) {
             fs.mkdirSync(toDir, {recursive: true})
         }
-        axios({
+        toolsPublic.downloadInstance({
             url: from,
-            method: 'GET',
-            responseType: 'blob'
-        }).then((response) => {
+            responseType: 'blob',
+            onDownloadProgress: progressCallback
+        }).request(config).then((response) => {
             response.data.arrayBuffer().then((res) => {
                 writeFileSync(to, Buffer.from(res))
                 resolve('success')
@@ -257,37 +260,31 @@ const downloadFile = (from, to) => {
             reject('error')
         })
     }).catch((err) => {
+        console.log(err)
         return 'error'
     })
 }
 
 /**
  * 下载文件到本地
- * @param {string} from 源地址
- * @param {string} to 目标地址
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
  * @param {Function} progressCallback 进度回调函数
+ * @param {Object} config 其它配置
  */
-const downloadFileV2 = (from, to, progressCallback) => {
+const downloadFileV2 = (options) => {
+    let {from, to, progressCallback, config} = options || {}
+    config = config || {}
     return new Promise((resolve, reject) => {
         // 检查目标文件夹是否存在
         let toDir = path.dirname(to)
         if (!fs.existsSync(toDir)) {
             fs.mkdirSync(toDir, {recursive: true})
         }
-        axios({
-            method: 'get',
+        toolsPublic.downloadInstance({
             url: from,
-            responseType: 'arraybuffer',
-            timeout: 1000*60*60,
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            onDownloadProgress:(progressEvent) => {
-                // let percent = (progressEvent.loaded / progressEvent.total * 100 | 0)
-                progressCallback && progressCallback(progressEvent)
-            },
-        }).then((res) => {
+            onDownloadProgress: progressCallback
+        }).request(config).then((res) => {
             fs.writeFileSync(to, Buffer.from(res.data))
             resolve('success')
         }).catch((err) => {
@@ -295,16 +292,18 @@ const downloadFileV2 = (from, to, progressCallback) => {
             reject('error')
         })
     }).catch((err) => {
+        console.log(err)
         return 'error'
     })
 }
 
-/*
-* 下载文件到本地
-* @param {string} from 源地址
-* @param {string} to 目标地址
-*/
-const downloadFileV3 = (from, to) => {
+/**
+ * 下载文件到本地
+ * @param {String} from 源地址
+ * @param {String} to 目标地址
+ */
+const downloadFileV3 = (options) => {
+    let {from, to} = options || {}
     return new Promise((resolve, reject) => {
         // 检查目标文件夹是否存在
         let toDir = path.dirname(to)
@@ -329,22 +328,22 @@ const downloadFileV3 = (from, to) => {
     })
 }
 
-/*
-* 加密数据（解密同）
-* @param {string} key 密钥
-* @param {buffer} bufferData 数据
-*/
+/**
+ * 加密数据（解密同）
+ * @param {String} key 密钥
+ * @param {Buffer} bufferData 数据
+ */
 const encrypt = (key, buffer) => {
     let cipher = crypto.createCipher('aes-256-ctr', key)
     let encryptedBytes = cipher.update(buffer)
     encryptedBytes = Buffer.concat([encryptedBytes, cipher.final()])
     return encryptedBytes
 }
-/*
-* 解压加密课件资源包
-* @param {string} zipFilePath 压缩包路径
-* @param {string} unzipFileDir 解压后文件存放路径
-*/
+/**
+ * 解压加密课件资源包
+ * @param {String} zipFilePath 压缩包路径
+ * @param {String} unzipFileDir 解压后文件存放路径
+ */
 const unzipFile = (zipFilePath, unzipFileDir) => {
     const encryptKey = Buffer.from('l6fwZHdJbU2Y4jxPDwjoI6P9vltHhc8bvDlExm4vRRg=', 'base64')
     let zip = new JsZip()
@@ -370,9 +369,9 @@ const unzipFile = (zipFilePath, unzipFileDir) => {
     })
 }
 
-/*
-* 获取本机IP地址
-*/
+/**
+ * 获取本机IP地址
+ */
 const getIpAddress = () => {
     let result = []
     let interfaces = os.networkInterfaces() || []
@@ -389,10 +388,10 @@ const getIpAddress = () => {
     return result
 }
 
-/*
-* 检测端口是否被占用
-* @param {number} port 端口号
-*/
+/**
+ * 检测端口是否被占用
+ * @param {Number} port 端口号
+ */
 const portIsOccupied = (port) => {
     return new Promise((resolve, reject) => {
         let server = net.createServer().listen(port)
@@ -412,11 +411,11 @@ const portIsOccupied = (port) => {
     })
 }
 
-/*
-* 获取可使用的端口号
-* @param {number} s_port 起始端口号
-* @param {number} count 需要获取的端口数量
-*/
+/**
+ * 获取可使用的端口号
+ * @param {Number} s_port 起始端口号
+ * @param {Number} count 需要获取的端口数量
+ */
 const getAvailablePorts = (s_port = 1, count = 1) => {
     s_port = Math.abs(parseInt(s_port) || 1)
     count = Math.abs(parseInt(count) || 1)

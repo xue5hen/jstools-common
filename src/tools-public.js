@@ -1,6 +1,25 @@
+const axios = require('axios')
+
+/**
+ * 获得一个下载实例
+ * @param {String} config 配置
+*/
+const downloadInstance = (config = {}) => {
+  config = config || {}
+  return axios.create({
+    responseType: 'arraybuffer',
+    timeout: 1000*60*60,
+    headers: {
+      'Cache-Control': 'no-cache',
+      'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'
+    },
+    ...config
+  })
+}
+
 /**
  * JSON字符串格式化
- * @param {string} jsonStr
+ * @param {String} jsonStr
  */
 const jsonParse = (jsonStr, defaultValue) => {
   let result = defaultValue || {}
@@ -18,7 +37,7 @@ const jsonParse = (jsonStr, defaultValue) => {
 /**
  * 日期格式化
  * @param {Date | string | number} date
- * @param {string} format
+ * @param {String} format
  */
 const formatDate = (date, format = 'yyyy-MM-dd hh:mm:ss') => {
   if (new Date(date).toString() === 'Invalid Date') return date
@@ -46,8 +65,8 @@ const formatDate = (date, format = 'yyyy-MM-dd hh:mm:ss') => {
 
 /**
  * 时间格式化
- * @param {number} time
- * @param {string} format
+ * @param {Number} time
+ * @param {String} format
  */
 const formatTime = (time, format = 'dd天hh小时mm分ss秒') => {
   time = parseInt(time) || 0
@@ -155,12 +174,20 @@ const deepCopy = (data) => {
 /**
 * 数组元素交换位置
 * @param {array} arr 数组
-* @param {number} index1 添加项目的位置
-* @param {number} index2 删除项目的位置
+* @param {Number} index1 添加项目的位置
+* @param {Number} index2 删除项目的位置
 */
 const swapArray = (arr, index1, index2) => {
   arr[index1] = arr.splice(index2, 1, arr[index1])[0]
   return arr
+}
+
+/**
+* 判断数据类型
+* @param {*} param
+*/
+const typeOf = (param) => {
+  return Object.prototype.toString.call(param).slice(8,-1)
 }
 
 /**
@@ -248,17 +275,19 @@ const throttleV2 = (fn, t) => {
 }
 
 export default module.exports = {
-    jsonParse,
-    formatDate,
-    formatTime,
-    formatFileSize,
-    HEX2RGB,
-    isLeapYear,
-    monthDaysCount,
-    deepCopy,
-    swapArray,
-    compareVersions,
-    debounce,
-    throttle,
-    throttleV2
+  downloadInstance,
+  jsonParse,
+  formatDate,
+  formatTime,
+  formatFileSize,
+  HEX2RGB,
+  isLeapYear,
+  monthDaysCount,
+  deepCopy,
+  swapArray,
+  typeOf,
+  compareVersions,
+  debounce,
+  throttle,
+  throttleV2
 }
