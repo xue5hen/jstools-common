@@ -1,4 +1,5 @@
 const axios = require('axios')
+const {cronValidate} = require('./tools-public-cron')
 
 /**
  * 获得一个下载实例
@@ -108,6 +109,15 @@ const formatFileSize = (fileSize) => {
 }
 
 /**
+ * 获取uuid
+ */
+const getUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    return (c === 'x' ? (Math.random() * 16 | 0) : ('r&0x3' | '0x8')).toString(16)
+  })
+}
+
+/**
  * HEX转RGB
  * @param {*} hex '#99ff66'
  * @returns {Array} [R,G,B]
@@ -119,6 +129,95 @@ const HEX2RGB = (hex) => {
     result[i] = parseInt(hex.substr(i * 2, 2), 16)
   }
   return result
+}
+
+/**
+ * 判断是否是身份证号码
+ * @param {String} code 身份证号码
+ * @returns {Boolean}
+ */
+const isCardID = (code) => {
+  let result = true
+  let tip = ''
+  // 18位身份证需要验证最后一位校验位
+  if (code.length === 18) {
+    code = code.split('')
+    //∑(ai×Wi)(mod 11)
+    //加权因子
+    let factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+    //校验位
+    let parity = [1, 0, 'X', 9, 8, 7, 6, 5, 4, 3, 2]
+    let sum = 0
+    let ai = 0
+    let wi = 0
+    for (let i = 0; i < 17; i++) {
+      ai = code[i]
+      wi = factor[i]
+      sum += ai * wi
+    }
+    let last = parity[sum % 11]
+    if (parity[sum % 11] != code[17]) {
+      tip = '校验位错误'
+      result = false
+    }
+  }else{
+    result = false
+  }
+  return result
+}
+
+/**
+ * 判断姓名是否合法
+ * @param {*} value 姓名
+ * @returns {Boolean}
+ */
+const isRealName = (value) => {
+  return /^[\u4e00-\u9fa5a-zA-Z0-9·]+$/.test(value)
+}
+
+/**
+ * 判断是否是手机号
+ * @param {*} value 手机号
+ * @returns {Boolean}
+ */
+const isMobileNumber = (value) => {
+  return /^1[0-9]{10}$/.test(value)
+}
+
+/**
+ * 判断金额格式是否正确
+ * @param {*} value 金额
+ * @returns {Boolean}
+ */
+const isAmount = (value) => {
+  return /^[0-9]+([.]{1}[0-9]{1,2})?$/.test(value)
+}
+
+/**
+ * 判断邮箱格式是否正确
+ * @param {*} value 邮箱
+ * @returns {Boolean}
+ */
+const isEmail = (value) => {
+  return /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((.[a-zA-Z0-9_-]{2,3}){1,2})$/.test(value)
+}
+
+/**
+ * 判断电话号码格式是否正确
+ * @param {*} value 电话号码
+ * @returns {Boolean}
+ */
+const isPhoneNumber = (value) => {
+  return /^([0-9]{3,4}-)?[0-9]{7,8}$/.test(value)
+}
+
+/**
+ * 校验URL是否正确
+ * @param {*} value URL
+ * @returns {Boolean}
+ */
+const isURL = (value) => {
+  return /^http[s]?:\/\/.*/.test(value)
 }
 
 /**
@@ -158,6 +257,14 @@ const monthDaysCount = (month, isLeapYear) => {
 }
 
 /**
+* 判断数据类型
+* @param {*} param
+*/
+const typeOf = (param) => {
+  return Object.prototype.toString.call(param).slice(8,-1)
+}
+
+/**
  * 简单深拷贝
  * @param {*} data
  */
@@ -172,6 +279,35 @@ const deepCopy = (data) => {
 }
 
 /**
+ * 深拷贝
+ * @param {*} data
+ */
+const deepCopyV2 = (data) => {
+  let dataType = typeOf(data)
+  let result
+  if (dataType ==='Array') {
+    result = []
+    for(let i = 0, len = data.length; i < len; i++){
+      result.push(deepCopyV2(data[i]))
+    }
+  } else if (dataType ==='Object') {
+    result = {}
+    for(let key in data){
+      result[key] = deepCopyV2(data[key])
+    }
+  } else {
+    result = data
+  }
+  return result
+}
+
+/**
+ * 克隆
+ * @param {*} data
+ */
+const clone = deepCopyV2
+
+/**
 * 数组元素交换位置
 * @param {array} arr 数组
 * @param {Number} index1 添加项目的位置
@@ -180,14 +316,6 @@ const deepCopy = (data) => {
 const swapArray = (arr, index1, index2) => {
   arr[index1] = arr.splice(index2, 1, arr[index1])[0]
   return arr
-}
-
-/**
-* 判断数据类型
-* @param {*} param
-*/
-const typeOf = (param) => {
-  return Object.prototype.toString.call(param).slice(8,-1)
 }
 
 /**
@@ -280,12 +408,23 @@ export default module.exports = {
   formatDate,
   formatTime,
   formatFileSize,
+  getUUID,
   HEX2RGB,
+  isCardID,
+  isRealName,
+  isMobileNumber,
+  isAmount,
+  isEmail,
+  isPhoneNumber,
+  isURL,
   isLeapYear,
   monthDaysCount,
-  deepCopy,
-  swapArray,
+  cronValidate,
   typeOf,
+  deepCopy,
+  deepCopyV2,
+  clone,
+  swapArray,
   compareVersions,
   debounce,
   throttle,

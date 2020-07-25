@@ -145,6 +145,23 @@ const isWeixinBrowser = () => {
 }
 
 /**
+ * 判断是否是移动端浏览器
+ * @returns {Boolean}
+ */
+const isMobileBrowser = () => {
+  let result = false
+  let mbModels = 'Android;webOS;iPhone;iPad;iPod;SymbianOS;BlackBerry;Windows Phone'.split(';')
+  let ua = navigator.userAgent
+  for (let i = 0; i < mbModels.length; i++) {
+    if (ua.indexOf(mbModels[i]) > -1) {
+      result = true
+      break
+    }
+  }
+  return result
+}
+
+/**
  * base64解密处理器
  * @param {String} base64Str
  */
@@ -161,6 +178,22 @@ const base64Decode = (base64Str) => {
   return result
 }
 
+/**
+ * 获取Url地址中参数
+ * @param {String} url 可有可无
+ */
+const getUrlParams = (url) => {
+  url = url || location.href
+  let result = {}
+  let search = url.split('?')[1] || ''
+  let params = search.split('&')
+  params.forEach(v => {
+    let [key, val] = v.split('=')
+    key && (result[key] = val || '')
+  })
+  return result
+}
+
 let toolsWeb = {
   ...toolsPublic,
   downloadFileByA,
@@ -170,7 +203,9 @@ let toolsWeb = {
   saveFileByBlob,
   formatNumber,
   isWeixinBrowser,
-  base64Decode
+  isMobileBrowser,
+  base64Decode,
+  getUrlParams
 }
 
 module.exports = (jstools) => {
