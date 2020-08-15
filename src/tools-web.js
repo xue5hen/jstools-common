@@ -179,6 +179,31 @@ const base64Decode = (base64Str) => {
 }
 
 /**
+ * 将数据字符串转换为文件对象
+ * @param {String} dataUrl
+ * @param {String} type 1(file对象)/2(blob对象)
+ * @param {String} fileName
+ * @returns {File/Blob}
+ */
+const dataUrl2File = (dataUrl, type, fileName) => {
+  let arr = dataUrl.split(',')
+  let mime = arr[0].match(/:(.*?);/)[1]
+  let bstr = atob(arr[1])
+  let n = bstr.length
+  let u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  if (type === 1) {
+    // 转换成file对象
+    return new File([u8arr], fileName, { type: mime })
+  } else {
+    // 转换成成blob对象
+    return new Blob([u8arr], { type: mime })
+  }
+}
+
+/**
  * 获取Url地址中参数
  * @param {String} url 可有可无
  */
@@ -205,6 +230,7 @@ let toolsWeb = {
   isWeixinBrowser,
   isMobileBrowser,
   base64Decode,
+  dataUrl2File,
   getUrlParams
 }
 

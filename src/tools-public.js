@@ -109,6 +109,33 @@ const formatFileSize = (fileSize) => {
 }
 
 /**
+ * 格式化浮点数
+ * @param {Number} num
+ * @param {Number} n 位数
+ * @param {Number} separator 千分位分隔符
+ * @returns {String}
+ */
+const formatDecimal = (num, n = 2, separator = '') => {
+  let result = ''
+  num = parseFloat(num)
+  n = parseInt(n)
+  n = n > 0 ? n : 0
+  // 若参数不合法则直接return
+  if (!isFinite(num)) return result
+  result = num.toFixed(n)
+  if (separator) {
+    let l = result.split('.')[0].split('').reverse()
+    let r = result.split('.')[1] || ''
+    let t = ''
+    for (let i = 0; i < l.length; i++) {
+      t += l[i] + ((i + 1) % 3 === 0 && (i + 1) !== l.length ? ',' : '')
+    }
+    result = t.split('').reverse().join('') + '.' + r
+  }
+  return result
+}
+
+/**
  * 获取uuid
  */
 const getUUID = () => {
@@ -408,6 +435,7 @@ export default module.exports = {
   formatDate,
   formatTime,
   formatFileSize,
+  formatDecimal,
   getUUID,
   HEX2RGB,
   isCardID,
