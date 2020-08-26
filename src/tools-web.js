@@ -1,5 +1,6 @@
 
 let toolsPublic = require('./tools-public.js')
+let polyfill = require('./tools-web-polyfill.js')
 
 /**
  * 下载文件 - a标签
@@ -219,8 +220,34 @@ const getUrlParams = (url) => {
   return result
 }
 
+/**
+ * 事件绑定&触发&解除
+ * @param {String} eventName 事件名称
+ * @param {Function} callback 回调函数
+ * @param {Boolean} isBubbling 是否冒泡
+ * @param {Boolean} cancelable 是否阻止浏览器的默认行为
+ * @param {*} argument 自定义传参
+ * 示例 myEvent.dispatchEvent('召唤兵器', {name: 'jstools-common'})
+ */
+const myEvent = {
+  dispatchEvent: (eventName, argument, isBubbling, cancelable) => {
+    let event = document.createEvent('HTMLEvents')
+    event.initEvent(eventName, isBubbling, cancelable)
+    Object.assign(event, argument)
+    document.dispatchEvent(event)
+    return event.result
+  },
+  addEventListener: (eventName, callback) => {
+    document.addEventListener(eventName, callback)
+  },
+  removeEventListener: (eventName, callback) => {
+    document.removeEventListener(eventName, callback)
+  }
+}
+
 let toolsWeb = {
   ...toolsPublic,
+  ...polyfill,
   downloadFileByA,
   downloadFileByIframe,
   downloadFileByForm,
@@ -231,7 +258,8 @@ let toolsWeb = {
   isMobileBrowser,
   base64Decode,
   dataUrl2File,
-  getUrlParams
+  getUrlParams,
+  myEvent
 }
 
 module.exports = (jstools) => {
