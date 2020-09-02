@@ -1,10 +1,171 @@
 const axios = require('axios')
+const qs = require('qs')
 const {cronValidate} = require('./tools-public-cron')
+
+/**
+ * axios方法封装
+ * @param {String} config 配置
+ * @param {String} contentType Content-Type配置
+ */
+const ajaxConstructor = (config = {}, contentType) => {
+  // 初始化配置
+  let baseConfig = {
+    timeout: 180000,
+    withCredentials: true, // 跨域携带cookies
+    headers: {
+      'Cache-Control': 'no-cache',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    },
+    paramsSerializer: function (params) {
+      return qs.stringify(params, { arrayFormat: 'brackets' })
+    },
+    transformResponse: [function (data) {
+      return data
+    }]
+  }
+  // 融合自定义配置
+  for (let k in (config || {})) {
+    if (['headers'].includes(k)) {
+      baseConfig.headers = { ...baseConfig.headers, ...config.headers }
+    } else {
+      baseConfig[k] = config[k]
+    }
+  }
+  // 单独的contentType参数优先级更高
+  if (contentType === 'json') {
+    baseConfig.headers['Content-Type'] = 'application/json; charset=UTF-8'
+  } else if (contentType === 'form') {
+    baseConfig.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
+  } else {
+    baseConfig.headers['Content-Type'] = contentType
+  }
+  let contentTypeHandler = (headers, type, value) => {
+    let name = ''
+    if (!(headers instanceof Object)) return ''
+    for (let k in (headers || {})) {
+      if (String(k).toLocaleLowerCase() === 'content-type') name = k
+    }
+    if (!name) return ''
+    if (type === 'set') {
+      headers[name] = value
+      return headers
+    } else {
+      return headers[name] || ''
+    }
+  }
+  let requestPlugin = (config = {}) => {
+    config.source = axios.CancelToken.source() // 设置取消函数
+    config.cancelToken = config.source.token
+    if (!config.params) config.params = {}
+    if (config.method === 'post') {
+      if (!config.data) config.data = {}
+      if (
+        (typeof (FormData) !== 'undefined' && config.data instanceof FormData) ||
+        contentTypeHandler(config.headers).indexOf('application/json') > -1
+      ) {
+        // 不执行操作
+      } else if (config.qs === undefined || config.qs) {
+        config.data = qs.stringify(config.data)
+      }
+    }
+    return config
+  }
+  let responsePlugin = (response) => {
+    response.config.source = null
+    if (contentTypeHandler(response.headers).indexOf('application/json') > -1) {
+      try {
+        response.data = JSON.parse(response.data)
+      } catch (e) {
+        response.data = { code: 33, msg: '服务端返回数据格式错误！' }
+      }
+    }
+    let errMessageDict = {
+      300: '资源已被转移至其他位置',
+      301: '请求的资源已被永久移动到新URI',
+      302: '请求的资源已被临时移动到新URI',
+      305: '请求的资源必须通过代理访问',
+      400: '错误资源访问请求',
+      401: '资源访问未授权',
+      403: '资源禁止访问',
+      404: '未找到要访问的资源',
+      405: '请更换请求方法',
+      406: '无法访问',
+      408: '请求超时',
+      413: '请求实体过大',
+      414: '请求URI过长',
+      500: '内部服务器错误',
+      501: '未实现',
+      503: '服务无法获得',
+      504: '接口访问超时'
+    }
+    let errCode = isNaN(response.status) ? 1 : response.status
+    let errMessage = `请求服务过程中发生错误【${errCode}】`
+    if (response.status === 200) {
+      return response
+    } else if ((response.status < 200 || response.status >= 300) && errMessageDict[String(response.status)]) {
+      errMessage = `${errMessageDict[String(response.status)]}【${errCode}】`
+    }
+    response.data = {
+      code: 34,
+      msg: errMessage || `请求服务过程中发生错误【${errCode}】`
+    }
+    contentTypeHandler(response.headers, 'set', 'application/json')
+    return response
+  }
+  let instance = axios.create(baseConfig)
+  // 并发请求
+  instance.all = axios.all
+  // 分隔请求
+  instance.spread = axios.spread
+  // 添加请求拦截器
+  instance.interceptors.request.use(requestPlugin, (error) => { return Promise.reject(error) })
+  // 添加响应拦截器
+  instance.interceptors.response.use(responsePlugin, (error) => { return Promise.reject(error) })
+  return instance
+}
+
+/**
+ * 获得一个axios实例（application/x-www-form-urlencoded）
+ */
+const ajax = ajaxConstructor()
+
+/**
+ * 获得一个axios实例（application/json）
+ */
+const ajaxJson = (() => {
+  let result = ajaxConstructor({}, 'json')
+  result.get = ajax.get
+  result.delete = ajax.delete
+  return result
+})()
+
+/**
+ * axios返回错误信息处理
+ */
+const ajaxError = (error, errorMessage) => {
+  let message = ''
+  if (errorMessage) {
+    message = errorMessage
+  } else if (typeof (error) === 'string') {
+    message = error
+  } else if (typeof (Error) !== 'undefined' && error instanceof Error) {
+    message = error.message
+  } else {
+    message = '请求过程中出现问题，请稍后再试【000】'
+  }
+  let offLine = message === 'Network Error'
+  if (typeof navigator === 'object') {
+    offLine = (!navigator.onLine) || message === 'Network Error'
+  }
+  message = offLine ? '网络已断开连接，请连接网络后重试！' : message
+  return message
+}
 
 /**
  * 获得一个下载实例
  * @param {String} config 配置
-*/
+ */
 const downloadInstance = (config = {}) => {
   config = config || {}
   return axios.create({
@@ -366,6 +527,18 @@ const compareVersions = (versionArr1, versionArr2) => {
 }
 
 /**
+ * 生成指定范围内的随机数
+ * @param {Number} min 下限
+ * @param {Number} max 上限
+ * @param {Boolean} decimal 是否为浮点数
+ */
+const random = (min, max, decimal) => {
+  let result = Math.random() * (max - min) + min
+  result = decimal ? result : parseInt(result)
+  return result
+}
+
+/**
  * 函数防抖 (只执行最后一次点击)
  * @param fn
  * @param delay
@@ -430,6 +603,10 @@ const throttleV2 = (fn, t) => {
 }
 
 export default module.exports = {
+  ajaxConstructor,
+  ajax,
+  ajaxJson,
+  ajaxError,
   downloadInstance,
   jsonParse,
   formatDate,
@@ -454,6 +631,7 @@ export default module.exports = {
   clone,
   swapArray,
   compareVersions,
+  random,
   debounce,
   throttle,
   throttleV2

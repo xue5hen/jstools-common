@@ -4,7 +4,6 @@ const net = require('net')
 const request = require('request')
 const os = require('os')
 const crypto = require('crypto')
-const JsZip = require('jszip')
 let toolsPublic = require('./tools-public.js')
 
 /**
@@ -341,12 +340,19 @@ const encrypt = (key, buffer) => {
 }
 /**
  * 解压加密课件资源包
- * @param {String} zipFilePath 压缩包路径
- * @param {String} unzipFileDir 解压后文件存放路径
+ * @param {String} from 压缩包路径
+ * @param {String} to 解压后文件存放路径
+ * @param {} JSZip 解压后文件存放路径
  */
-const unzipFile = (zipFilePath, unzipFileDir) => {
+const unzipFile = (options = {}) => {
+    options = options || {}
+    let zipFilePath = options.from || ''
+    let unzipFileDir = options.to || ''
+    let JSZip = options.JSZip || window.JSZip
+    if (!zipFilePath) return Promise.reject('压缩包路径不能为空')
+    if (!JSZip) return Promise.reject('need input plugin method: JSZip')
     const encryptKey = Buffer.from('l6fwZHdJbU2Y4jxPDwjoI6P9vltHhc8bvDlExm4vRRg=', 'base64')
-    let zip = new JsZip()
+    let zip = new JSZip()
     let bytes = fs.readFileSync(zipFilePath)
     bytes = encrypt(encryptKey, bytes)
     return zip.loadAsync(bytes).then(({files}) => {

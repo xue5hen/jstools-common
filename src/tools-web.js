@@ -266,8 +266,8 @@ const myEvent = {
 
 const screenshot2pdf = (options = {}) => {
   options = options || {}
-  let html2canvas = options.html2canvas
-  let jsPDF = options.jsPDF
+  let html2canvas = options.html2canvas || window.html2canvas
+  let jsPDF = options.jsPDF || (window.jspdf || {}).jsPDF
   let catalogues = [...(options.catalogues || [])]
   let contents = [...(options.contents || [])]
   let clipClass = options.clipClass || ''
