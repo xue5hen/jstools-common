@@ -246,6 +246,114 @@ const myEvent = {
 }
 
 /**
+ * 获取摄像头列表&获取摄像头视频流&获取视频流错误处理&关闭视频流
+ * @param {Object} constraints getCameraStream/媒体参数配置
+ * @param {String} deviceId getCameraStream/媒体设备ID
+ * @param {Object} videoDom getCameraStream/video标签DOM元素
+ * @param {Function} success getCameraStream/成功回调函数
+ * @param {Function} fail getCameraStream/失败回调函数
+ * @param {Function} oninactive/onended getCameraStream/数据流结束回调函数
+ * @param {Object} err getCameraStreamError/错误对象
+ * @param {Function} callback getCameraStreamError/回调函数
+ * @param {Object} mediaStream closeCameraStream/视频流对象
+ */
+const myCamera = {
+  // 摄像头视频流
+  cameraStream: null,
+  // 获取摄像头列表
+  getCameraList: function () {
+    let result = []
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      return navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
+        result = deviceInfos.filter(v => v.kind === 'videoinput')
+        return result
+      })
+    } else {
+      return Promise.resolve(result)
+    }
+  },
+  // 调用摄像头 - 失败
+  getCameraStreamError: function (err, callback) {
+    let message = ''
+    if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      message = '未检测到可用的摄像头设备，请连接设备后重试'
+    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError' || err.name === 'SourceUnavailableError') {
+      message = '检测到设备正被占用，请稍后重试'
+    } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+      message = '检测到设备参数无法满足功能需求'
+    } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      message = '调用设备权限被拒绝'
+    } else if (err.name === 'TypeError') {
+      message = '设备参数要求未设置'
+    } else {
+      message = `访问用户媒体设备失败：${err.name}, ${err.message}`
+    }
+    console.log(message)
+    callback && callback(message, err)
+  },
+  // 获取摄像头视频流
+  getCameraStream: function (options) {
+    options = options || {}
+    // if (this.cameraStream) {
+    //   this.closeCameraStream(this.cameraStream)
+    //   this.cameraStream = null
+    // }
+    let constraints = options.constraints || {video: {}, audio: false}
+    let deviceId = options.deviceId || ''
+    let videoDom = options.videoDom
+    let oninactive = options.oninactive || options.onended || (() => {console.log('数据流关闭')})
+    let success = (mediaStream) => {
+      // 监听数据流关闭
+      mediaStream.oninactive = oninactive
+      this.cameraStream = mediaStream
+      let tracks = []
+      if (mediaStream.getTracks) { tracks = mediaStream.getTracks() }
+      else if (mediaStream.getVideoTracks) { tracks = mediaStream.getVideoTracks() }
+      tracks.forEach(v => (v.onended = oninactive))
+      videoDom && (videoDom.autoplay = 'autoplay')
+      try {
+        videoDom && (videoDom.src = (window.URL || window.webkitURL).createObjectURL(mediaStream))
+      } catch (err) {
+        videoDom && (videoDom.srcObject = mediaStream)
+      }
+      options.success && options.success(mediaStream)
+    }
+    let fail = (err) => {
+      this.getCameraStreamError(err, options.fail)
+    }
+    if (deviceId) {
+      if (!constraints.video) constraints.video = {}
+      if (!constraints.video.deviceId) constraints.video.deviceId = {}
+      constraints.video.deviceId.exact = deviceId
+    }
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      return navigator.mediaDevices.getUserMedia(constraints).then(success).catch(fail)
+    } else if (navigator.webkitGetUserMedia) {
+      return navigator.webkitGetUserMedia(constraints).then(success).catch(fail)
+    } else if (navigator.mozGetUserMedia) {
+      return navigator.mozGetUserMedia(constraints).then(success).catch(fail)
+    } else if (navigator.msGetUserMedia) {
+      return navigator.msGetUserMedia(constraints).then(success).catch(fail)
+    } else if (navigator.getUserMedia) {
+      return navigator.getUserMedia(constraints).then(success).catch(fail)
+    } else {
+      return Promise.reject('你的浏览器不支持访问用户媒体设备，请更换浏览器后重试')
+    }
+  },
+  // 关闭摄像头
+  closeCameraStream: function (mediaStream) {
+    mediaStream = mediaStream || this.cameraStream
+    if (!mediaStream) return
+    if (mediaStream.stop) {
+      mediaStream.stop()
+    } else { // Chrome 45版本以上关闭摄像头的方式
+      let track = mediaStream.getTracks()[0]
+      track.stop && track.stop()
+    }
+  }
+}
+
+/**
  * 网页截图并保存为PDF文件
  * @param {Object} options 参数配置
  * @param {String} options/catalogues 封面对应的dom元素数组
@@ -263,7 +371,6 @@ const myEvent = {
  * @param {Number} options/pageNumLeft 页码横向位置（默认参考A4纸，取值205）
  * @param {Number} options/fontSize 文本字号大小（默认12）
  */
-
 const screenshot2pdf = (options = {}) => {
   options = options || {}
   let html2canvas = options.html2canvas || window.html2canvas
@@ -435,6 +542,7 @@ let toolsWeb = {
   dataUrl2File,
   getUrlParams,
   myEvent,
+  myCamera,
   screenshot2pdf
 }
 

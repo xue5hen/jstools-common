@@ -348,7 +348,7 @@ const unzipFile = (options = {}) => {
     options = options || {}
     let zipFilePath = options.from || ''
     let unzipFileDir = options.to || ''
-    let JSZip = options.JSZip || window.JSZip
+    let JSZip = options.JSZip || (typeof window !== 'undefined' ? window.JSZip : null)
     if (!zipFilePath) return Promise.reject('压缩包路径不能为空')
     if (!JSZip) return Promise.reject('need input plugin method: JSZip')
     const encryptKey = Buffer.from('l6fwZHdJbU2Y4jxPDwjoI6P9vltHhc8bvDlExm4vRRg=', 'base64')
