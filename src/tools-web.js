@@ -138,6 +138,79 @@ const formatNumber = (num) => {
 }
 
 /**
+ * 执行带浏览器前缀的方法
+ * @param {Object} element
+ * @param {Function} method
+ */
+const runPrefixMethod = (element, method) => {
+  let usablePrefixMethod
+  ['webkit', 'moz', 'ms', 'o', ''].forEach((prefix) => {
+    if (usablePrefixMethod) return
+    if (prefix === '') {
+      // 无前缀，方法首字母小写
+      method = method.slice(0,1).toLowerCase() + method.slice(1)
+    }
+    let typePrefixMethod = typeof element[prefix + method]
+    if (typePrefixMethod + '' !== 'undefined') {
+      if (typePrefixMethod === 'function') {
+        usablePrefixMethod = element[prefix + method]()
+      } else {
+        usablePrefixMethod = element[prefix + method]
+      }
+    }
+  })
+  return usablePrefixMethod
+}
+
+/**
+ * 绑定带浏览器前缀的事件
+ * @param {Object} element 目标DOM元素
+ * @param {String} eventName 事件名称
+ * @param {Function} callback 事件回调函数
+ * @param {Boolean} capture 是否在捕获阶段触发
+ */
+const onPrefixEvent = (element, eventName, callback, capture = false) => {
+  if (!element || (typeof callback !== 'function')) return
+  let usablePrefixEvent
+  ['webkit', 'moz', 'ms', 'o', ''].forEach((prefix) => {
+    if (usablePrefixEvent) return
+    let typePrefixEvent = typeof element['on' + prefix + eventName]
+    if (typePrefixEvent + '' !== 'undefined') {
+      usablePrefixEvent = prefix + eventName
+      element.addEventListener(prefix + eventName, callback, capture)
+    }
+  })
+  return usablePrefixEvent
+}
+
+/**
+ * 绑定带浏览器前缀的事件
+ * @param {Object} element 目标DOM元素
+ * @param {String} eventName 事件名称
+ * @param {Function} callback 事件回调函数
+ * @param {Boolean} capture 是否在捕获阶段触发
+ */
+const offPrefixEvent = (element, eventName, callback, capture = false) => {
+  if (!element || (typeof callback !== 'function')) return
+  ['webkit', 'moz', 'ms', 'o', ''].forEach((prefix) => {
+    let typePrefixEvent = typeof element['on' + prefix + eventName]
+    if (typePrefixEvent + '' !== 'undefined') {
+      element.removeEventListener(prefix + eventName, callback, capture)
+    }
+  })
+}
+
+/**
+ * 判断是否处在全屏状态
+ * @returns {Boolean}
+ */
+const isFullscreen = () => {
+  return !!(runPrefixMethod(document, 'FullscreenElement')
+  || runPrefixMethod(document, 'FullScreen')
+  || runPrefixMethod(document, 'IsFullScreen'))
+}
+
+/**
  * 判断是否微信浏览器
  * @returns {Boolean}
  */
@@ -536,6 +609,10 @@ let toolsWeb = {
   downloadFile,
   saveFileByBlob,
   formatNumber,
+  runPrefixMethod,
+  onPrefixEvent,
+  offPrefixEvent,
+  isFullscreen,
   isWeixinBrowser,
   isMobileBrowser,
   base64Decode,
