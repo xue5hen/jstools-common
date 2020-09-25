@@ -211,6 +211,14 @@ const isFullscreen = () => {
 }
 
 /**
+ * 判断是否支持全屏方法
+ * @returns {Boolean}
+ */
+const isFullscreenEnabled = () => {
+  return !!(runPrefixMethod(document, 'FullscreenEnabled'))
+}
+
+/**
  * 判断是否微信浏览器
  * @returns {Boolean}
  */
@@ -223,16 +231,8 @@ const isWeixinBrowser = () => {
  * @returns {Boolean}
  */
 const isMobileBrowser = () => {
-  let result = false
-  let mbModels = 'Android;webOS;iPhone;iPad;iPod;SymbianOS;BlackBerry;Windows Phone'.split(';')
-  let ua = navigator.userAgent
-  for (let i = 0; i < mbModels.length; i++) {
-    if (ua.indexOf(mbModels[i]) > -1) {
-      result = true
-      break
-    }
-  }
-  return result
+  let result = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|SymbianOS|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+  return !!result
 }
 
 /**
@@ -274,6 +274,21 @@ const dataUrl2File = (dataUrl, type, fileName) => {
   } else {
     // 转换成成blob对象
     return new Blob([u8arr], { type: mime })
+  }
+}
+
+/**
+ * 按基准大小缩放文档视口
+ * @param {Number} baseSize
+ */
+const zoomScreenByBaseSize = (baseSize) => {
+  if (!baseSize) return
+  let scale = window.screen.width / baseSize
+  let meta = document.createElement('meta')
+  meta.name = 'viewport'
+  meta.content = `initial-scale=${scale},minimum-scale=${scale},maximum-scale=1,user-scalable=yes`
+  if (document.head) {
+    document.head.appendChild(meta)
   }
 }
 
@@ -613,10 +628,12 @@ let toolsWeb = {
   onPrefixEvent,
   offPrefixEvent,
   isFullscreen,
+  isFullscreenEnabled,
   isWeixinBrowser,
   isMobileBrowser,
   base64Decode,
   dataUrl2File,
+  zoomScreenByBaseSize,
   getUrlParams,
   myEvent,
   myCamera,

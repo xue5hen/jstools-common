@@ -1,6 +1,6 @@
 {
   "name": "jstools-common",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "实际工作中常用的JS工具函数集（包括Web及NodeJS环境）",
   "main": "src/index.js",
   "scripts": {
