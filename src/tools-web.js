@@ -201,6 +201,37 @@ const offPrefixEvent = (element, eventName, callback, capture = false) => {
 }
 
 /**
+ * 滚动条垂直滚动
+ * @param {Object} element 目标DOM元素
+ * @param {Number} from 起点
+ * @param {Number} to 终点
+ * @param {Number} duration 滚动时长
+ * @param {Function} endCallback 滚动结束后的回调函数
+ */
+const scrollTop = (element, from = 0, to, duration = 500, endCallback) => {
+  polyfill.polyfillRequestAnimationFrame()
+  const difference = Math.abs(from - to)
+  const step = Math.ceil(difference / duration * 50)
+  scroll(from, to, step)
+  function scroll(start, end, step) {
+    if (start === end) {
+      endCallback && endCallback()
+      return
+    }
+    let d = (start + step > end) ? end : start + step
+    if (start > end) {
+      d = (start - step < end) ? end : start - step
+    }
+    if (element === window) {
+      window.scrollTo(d, d)
+    } else {
+      element.scrollTop = d
+    }
+    window.requestAnimationFrame(() => scroll(d, end, step))
+  }
+}
+
+/**
  * 判断是否处在全屏状态
  * @returns {Boolean}
  */
@@ -627,6 +658,7 @@ let toolsWeb = {
   runPrefixMethod,
   onPrefixEvent,
   offPrefixEvent,
+  scrollTop,
   isFullscreen,
   isFullscreenEnabled,
   isWeixinBrowser,

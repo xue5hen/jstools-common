@@ -18,6 +18,23 @@ const polyfillCustomEvent = () => {
   window.CustomEvent = CustomEvent
 }
 
+/**
+ * RequestAnimationFrame constructor polyfill
+ */
+const polyfillRequestAnimationFrame = () => {
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = (
+      window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.msRequestAnimationFrame ||
+      function (callback) {
+        return window.setTimeout(callback, 1000/60)
+      }
+    )
+  }
+}
+
 module.exports = {
-  polyfillCustomEvent
+  polyfillCustomEvent,
+  polyfillRequestAnimationFrame
 }
