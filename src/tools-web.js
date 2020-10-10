@@ -73,11 +73,17 @@ const saveFileByBlob = (options) => {
     navigator.msSaveBlob(data, fileName)
   } else {
     window.URL = window.URL || window.webkitURL
-    let ele = document.createElement('a')
-    ele.href = window.URL.createObjectURL(data)
-    ele.download = fileName
-    ele.click()
-    window.URL.revokeObjectURL(ele.href)
+
+    // 方案一
+    // let ele = document.createElement('a')
+    // ele.href = window.URL.createObjectURL(data)
+    // ele.download = fileName
+    // ele.click()
+    // window.URL.revokeObjectURL(ele.href)
+
+    // 方案二 20201010修复Safari的(WebkitBlobResource error 1.)问题
+    let url = window.URL.createObjectURL(data)
+    downloadFileByA({from: url, to: fileName})
   }
 }
 
