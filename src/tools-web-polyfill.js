@@ -34,7 +34,22 @@ const polyfillRequestAnimationFrame = () => {
   }
 }
 
+/**
+ * CancelAnimationFrame constructor polyfill
+ */
+const polyfillCancelAnimationFrame = () => {
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = (
+      window.mozCancelAnimationFrame ||
+      function (requestID) {
+        return window.clearTimeout(requestID)
+      }
+    )
+  }
+}
+
 module.exports = {
   polyfillCustomEvent,
-  polyfillRequestAnimationFrame
+  polyfillRequestAnimationFrame,
+  polyfillCancelAnimationFrame
 }
