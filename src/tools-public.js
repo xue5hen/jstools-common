@@ -164,7 +164,7 @@ const ajaxError = (error, errorMessage) => {
 
 /**
  * 获得一个下载实例
- * @param {String} config 配置
+ * @param {Object} config 配置
  */
 const downloadInstance = (config = {}) => {
   config = config || {}
@@ -177,6 +177,58 @@ const downloadInstance = (config = {}) => {
     },
     ...config
   })
+}
+
+/**
+ * 核实URL地址是否可用
+ * @param {String} url
+ * @param {Number} timeout 请求超时时间
+ * @returns {Object} URL的相关信息（无可用信息则返回null）
+ */
+const checkUrlStatus = (url, timeout = 30000) => {
+  let result = null
+  if (!url) return Promise.resolve(result)
+  return new Promise((resolve, reject) => {
+    let source = axios.CancelToken.source()
+    setTimeout(() => { source.cancel() }, timeout)
+    // 请求url地址如果包含中文将其转码后访问
+    axios.head(encodeURI(url), { cancelToken: source.token }).then((res) => {
+      result = {url, status: res.status, message: '地址可用'}
+    }).catch(err => {
+      result = {url, status: (err.response || {}).status, message: err.message}
+    }).finally(() => {
+      resolve(result)
+    })
+  })
+}
+
+/**
+ * 字符串枚举
+ * @param {Object} config 配置
+ * @param {Array} config/template 模板字符串数组，变量以{{}}标记
+ * @param {Array} config/* 其它参数为模板字符串各个变量的枚举字典
+ */
+const enumStringByTemplate = (config) => {
+  config = config || {}
+  let template = config.template || []
+  let result = [...template]
+  let keys = Object.keys(config).filter(k => k !== 'template')
+  keys = [...new Set(keys)]
+  function fn (temps, key, values) {
+    let result = []
+    temps.forEach(s => {
+      values.forEach(v => {
+        let _s = s.replace(new RegExp(`{{${key}}}`, 'g'), v)
+        result.push(_s)
+      })
+    })
+    return result
+  }
+  keys.forEach(k => {
+    let values = config[k] || []
+    result = fn(result, k, values)
+  })
+  return result
 }
 
 /**
@@ -608,6 +660,8 @@ export default module.exports = {
   ajaxJson,
   ajaxError,
   downloadInstance,
+  checkUrlStatus,
+  enumStringByTemplate,
   jsonParse,
   formatDate,
   formatTime,

@@ -79,7 +79,7 @@ const saveFileByBlob = (options) => {
     // ele.href = window.URL.createObjectURL(data)
     // ele.download = fileName
     // ele.click()
-    // window.URL.revokeObjectURL(ele.href)
+    // window.URL.revokeObjectURL(ele.href) // 用来释放一个之前已经存在的、通过调用 URL.createObjectURL() 创建的 URL 对象
 
     // 方案二 20201010修复Safari的(WebkitBlobResource error 1.)问题
     let url = window.URL.createObjectURL(data)

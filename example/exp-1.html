@@ -14,6 +14,55 @@
     <script>
         console.info('全局变量$jstools:')
         console.log($jstools)
+        let template = [
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/中医技能-{{name1}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/中医技能-{{name2}}{{order}}-{{name1}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/真题/中医/{{date}}中医真题直播.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/{{date}}中医.mp4',
+            'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医、中西医-{{name1}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医、中西医.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyiyishu/2019/确有专长{{order}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyiyishu/2019/确有专长-{{name1}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyiyishu/2019/师承-{{name1}}_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyiyishu/2019/{{date}}中医考前押题.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/金考点-中医-{{name1}}_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/金考点-中医-{{name1}}-1_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/金考点-中医-{{name1}}——中医_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/金考点-中医-{{name1}}——中医-1_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/xiangcun/2019/{{name1}}.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/xiangcun/2019/金考点-乡村-{{name1}}_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/中级职称/中西医结合内科学/基础知识/中药学（李烁）/{{name1}}_(new).mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/中级职称/中西医结合内科学/基础知识/中药学（李烁）/{{name1}}_(new).mp',
+            // 'https://mp4-from.cdn.bcebos.com/2021zhibo/zhongyi/{{date}}中医、中西医备考导学课.mp4',
+            'https://mp4-from.cdn.bcebos.com/2021zhibo/zhongyi/{{date}}中医、中西医.mp4'
+        ]
+        let name1 = [
+            // 课时名称
+        ]
+        let name2 = [
+            // 章节名称
+        ]
+        let order = [
+            // 序号
+        ]
+        let date = [
+            // 日期
+            '10.21',
+            '10.23',
+            '12.23',
+        ]
+        let urls = $jstools.enumStringByTemplate({
+            template: template,
+            date: date
+        })
+        let count = 0
+        urls.forEach(url => {
+            setTimeout(() => {
+                $jstools.checkUrlStatus(url).then((res)=>{console.log(res)})
+            }, count * 1000)
+            count++
+        })
     </script>
 </body>
 </html>
