@@ -372,6 +372,45 @@ const HEX2RGB = (hex) => {
 }
 
 /**
+ * TXT转SVG
+ * @param {Object}
+ * @param {String} params/content 要转换的文本内容
+ * @param {Number} params/width SVG图片宽度
+ * @param {Number} params/height SVG图片高度
+ * @param {Number} params/fontSize 字号
+ * @param {String} params/fontFamily 字体
+ * @param {String} params/color 文字颜色
+ * @param {Number} params/opacity 透明度0-1
+ * @param {Number} params/x 横轴图片中心百分比数（50代表50%）
+ * @param {Number} params/y 纵轴图片中心百分比数（50代表50%）
+ * @param {Number} params/rotate 旋转角度
+ */
+const TXT2SVG = (params) => {
+  params = params || {}
+  let content = params.content || ''
+  let width = isNaN(parseFloat(params.width)) ? 300 : parseFloat(params.width)
+  let height = isNaN(parseFloat(params.height)) ? 150 : parseFloat(params.height)
+  let fontSize = isNaN(parseFloat(params.fontSize)) ? 14 : parseFloat(params.fontSize)
+  let fontFamily = params.fontFamily || ''
+  let color = params.color || '#a2a9b6'
+  let opacity = isNaN(parseFloat(params.opacity)) ? 1 : parseFloat(params.opacity)
+  let x = isNaN(parseFloat(params.x)) ? 50 : parseFloat(params.x)
+  let y = isNaN(parseFloat(params.y)) ? 50 : parseFloat(params.y)
+  let rotate = parseFloat(params.rotate) || 0
+  let size = ` width="${width}" height="${height}"`
+  let fill = ` fill="${color}"`
+  let fillOpacity = ` fill-opacity="${opacity}"`
+  let transform = ` transform="rotate(${rotate}, ${width / 2} ${height / 2})"`
+  fontFamily = ` font-family="${fontFamily}"`
+  if (color === '#000000') { fill = '' }
+  if (opacity === 1) { fillOpacity = '' }
+  if (rotate === 0) { transform = '' }
+  let originSvg = `<svg${size} xmlns="http://www.w3.org/2000/svg"><text x="${x}%" y="${y}%" font-size="${fontSize}"${fill}${fillOpacity}${fontFamily}${transform} text-anchor="middle" dominant-baseline="middle">${content}</text></svg>`
+  let encodeSvg = `data:image/svg+xml,${originSvg.replace(/\n/g, '').replace(/"/g,"'").replace(/%/g,'%25').replace(/#/g,'%23').replace(/{/g,'%7B').replace(/}/g,'%7D').replace(/</g,'%3C').replace(/>/g,'%3E')}`
+  return {origin: originSvg, encode: encodeSvg}
+}
+
+/**
  * 判断是否是身份证号码
  * @param {String} code 身份证号码
  * @returns {Boolean}
@@ -669,6 +708,7 @@ export default module.exports = {
   formatDecimal,
   getUUID,
   HEX2RGB,
+  TXT2SVG,
   isCardID,
   isRealName,
   isMobileNumber,

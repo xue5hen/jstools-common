@@ -14,12 +14,17 @@
     <script>
         console.info('全局变量$jstools:')
         console.log($jstools)
+        // let x = document.body.clientWidth / 2
+        // let y = document.body.clientHeight / 2
+        let url = $jstools.TXT2SVG({content: '全局变量jstools', rotate: -45, fontFamily:'system-ui, sans-serif'}).encode
+        document.body.style.background = `url("${url}")`
+        // document.body.style.background = `#000 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23ffffff' font-family='system-ui, sans-serif' text-anchor='middle' dominant-baseline='middle'%3E视频无法预览%3C/text%3E%3C/svg%3E") no-repeat center`
         let template = [
             // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/中医技能-{{name1}}.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/中医技能-{{name2}}{{order}}-{{name1}}.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/真题/中医/{{date}}中医真题直播.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/zhongyi/2019/{{date}}中医.mp4',
-            'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医.mp4',
+            // 'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医、中西医-{{name1}}.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/2020直播课/中医/基础精讲班/{{date}}中医、中西医.mp4',
             // 'https://ahuyikao.cdn.bcebos.com/zhongyiyishu/2019/确有专长{{order}}.mp4',
@@ -35,7 +40,7 @@
             // 'https://ahuyikao.cdn.bcebos.com/中级职称/中西医结合内科学/基础知识/中药学（李烁）/{{name1}}_(new).mp4',
             // 'https://ahuyikao.cdn.bcebos.com/中级职称/中西医结合内科学/基础知识/中药学（李烁）/{{name1}}_(new).mp',
             // 'https://mp4-from.cdn.bcebos.com/2021zhibo/zhongyi/{{date}}中医、中西医备考导学课.mp4',
-            'https://mp4-from.cdn.bcebos.com/2021zhibo/zhongyi/{{date}}中医、中西医.mp4'
+            // 'https://mp4-from.cdn.bcebos.com/2021zhibo/zhongyi/{{date}}中医、中西医.mp4'
         ]
         let name1 = [
             // 课时名称
@@ -57,12 +62,12 @@
             date: date
         })
         let count = 0
-        urls.forEach(url => {
-            setTimeout(() => {
-                $jstools.checkUrlStatus(url).then((res)=>{console.log(res)})
-            }, count * 1000)
-            count++
-        })
+        // urls.forEach(url => {
+        //     setTimeout(() => {
+        //         $jstools.checkUrlStatus(url).then((res)=>{console.log(res)})
+        //     }, count * 1000)
+        //     count++
+        // })
     </script>
 </body>
 </html>
