@@ -4,8 +4,8 @@ let polyfill = require('./tools-web-polyfill.js')
 
 /**
  * 下载文件 - a标签
- * @param {String} from 源地址
- * @param {String} to 目标地址/文件名
+ * @param {String} options.from 源地址
+ * @param {String} options.to 目标地址/文件名
  */
 const downloadFileByA = (options) => {
   let from = ''
@@ -146,7 +146,7 @@ const formatNumber = (num) => {
 /**
  * 执行带浏览器前缀的方法
  * @param {Object} element
- * @param {Function} method
+ * @param {String} method
  */
 const runPrefixMethod = (element, method) => {
   let usablePrefixMethod
@@ -190,7 +190,7 @@ const onPrefixEvent = (element, eventName, callback, capture = false) => {
 }
 
 /**
- * 绑定带浏览器前缀的事件
+ * 解绑带浏览器前缀的事件
  * @param {Object} element 目标DOM元素
  * @param {String} eventName 事件名称
  * @param {Function} callback 事件回调函数
@@ -481,13 +481,13 @@ const myCamera = {
 /**
  * 网页截图并保存为PDF文件
  * @param {Object} options 参数配置
- * @param {String} options/catalogues 封面对应的dom元素数组
- * @param {String} options/contents 内容页对应的dom元素数组
+ * @param {Array} options/catalogues 封面对应的dom元素数组
+ * @param {Array} options/contents 内容页对应的dom元素数组
  * @param {String} options/clipClass 可裁切元素的类名
  * @param {String} options/flipClass 需另起一页绘制的元素的类名
  * @param {String} options/fileName 要保存的截图名称
- * @param {Number} options/paperWidth 有效宽度（默认参考A4纸，取值297）
- * @param {Number} options/paperHeight 有效高度（默认参考A4纸，取值210）
+ * @param {Number} options/paperWidth 页面宽度（默认参考A4纸，取值297）
+ * @param {Number} options/paperHeight 页面高度（默认参考A4纸，取值210）
  * @param {Number} options/availWidth 有效宽度（默认参考A4纸，取值287）
  * @param {Number} options/availHeight 有效高度（默认参考A4纸，取值185）
  * @param {Number} options/pageStartTop 页面内容纵向开始位置（默认参考A4纸，取值10）

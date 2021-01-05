@@ -109,7 +109,7 @@ const mkDir = (filePath) => {
 }
 
 /**
- * 删除文件
+ * 删除文件/文件夹
  * @param {String} filePath 目标路径
  */
 const delFile = (filePath) => {
@@ -342,19 +342,23 @@ const encrypt = (key, buffer) => {
  * 解压加密课件资源包
  * @param {String} from 压缩包路径
  * @param {String} to 解压后文件存放路径
- * @param {} JSZip 解压后文件存放路径
+ * @param {Function} JSZip jszip第三方库方法
+ * @param {Buffer} encryptKey 加密key
  */
 const unzipFile = (options = {}) => {
     options = options || {}
     let zipFilePath = options.from || ''
     let unzipFileDir = options.to || ''
     let JSZip = options.JSZip || (typeof window !== 'undefined' ? window.JSZip : null)
+    let encryptKey = options.encryptKey
+    // const encryptKey = Buffer.from('l6fwZHdJbU2Y4jxPDwjoI6P9vltHhc8bvDlExm4vRRg=', 'base64')
     if (!zipFilePath) return Promise.reject('压缩包路径不能为空')
     if (!JSZip) return Promise.reject('need input plugin method: JSZip')
-    const encryptKey = Buffer.from('l6fwZHdJbU2Y4jxPDwjoI6P9vltHhc8bvDlExm4vRRg=', 'base64')
     let zip = new JSZip()
     let bytes = fs.readFileSync(zipFilePath)
-    bytes = encrypt(encryptKey, bytes)
+    if (encryptKey) {
+        bytes = encrypt(encryptKey, bytes)
+    }
     return zip.loadAsync(bytes).then(({files}) => {
         // 将数据写入本地文件
         let arr = []

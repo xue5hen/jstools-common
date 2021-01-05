@@ -193,9 +193,9 @@ const checkUrlStatus = (url, timeout = 30000) => {
     setTimeout(() => { source.cancel() }, timeout)
     // 请求url地址如果包含中文将其转码后访问
     axios.head(encodeURI(url), { cancelToken: source.token }).then((res) => {
-      result = {url, status: res.status, message: '地址可用'}
+      result = {url, status: res.status, message: '地址可用', success: true}
     }).catch(err => {
-      result = {url, status: (err.response || {}).status, message: err.message}
+      result = {url, status: (err.response || {}).status, message: err.message, success: false}
     }).finally(() => {
       resolve(result)
     })
@@ -234,6 +234,7 @@ const enumStringByTemplate = (config) => {
 /**
  * JSON字符串格式化
  * @param {String} jsonStr
+ * @param {*} defaultValue
  */
 const jsonParse = (jsonStr, defaultValue) => {
   let result = defaultValue || {}
@@ -303,7 +304,7 @@ const formatTime = (time, format = 'dd天hh小时mm分ss秒') => {
 
 /**
  * 格式化文件大小
- * @param {*} fileSize
+ * @param {Number} fileSize
  * @returns {String}
  */
 const formatFileSize = (fileSize) => {
@@ -323,9 +324,9 @@ const formatFileSize = (fileSize) => {
 
 /**
  * 格式化浮点数
- * @param {Number} num
- * @param {Number} n 位数
- * @param {Number} separator 千分位分隔符
+ * @param {Number} num 要格式化的数字
+ * @param {Number} n 小数位数
+ * @param {String} separator 千分位分隔符
  * @returns {String}
  */
 const formatDecimal = (num, n = 2, separator = '') => {
@@ -349,7 +350,7 @@ const formatDecimal = (num, n = 2, separator = '') => {
 }
 
 /**
- * 获取uuid
+ * 随机生成一个UUID
  */
 const getUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -359,7 +360,7 @@ const getUUID = () => {
 
 /**
  * HEX转RGB
- * @param {*} hex '#99ff66'
+ * @param {String} hex '#99ff66'
  * @returns {Array} [R,G,B]
  */
 const HEX2RGB = (hex) => {
@@ -447,7 +448,7 @@ const isCardID = (code) => {
 
 /**
  * 判断姓名是否合法
- * @param {*} value 姓名
+ * @param {String} value 姓名
  * @returns {Boolean}
  */
 const isRealName = (value) => {
@@ -588,7 +589,7 @@ const clone = deepCopyV2
 
 /**
 * 数组元素交换位置
-* @param {array} arr 数组
+* @param {Array} arr 数组
 * @param {Number} index1 添加项目的位置
 * @param {Number} index2 删除项目的位置
 */
@@ -598,7 +599,7 @@ const swapArray = (arr, index1, index2) => {
 }
 
 /**
- * 版本对比函数
+ * 版本号比较
  * @param {Array} versionArr1 版本1
  * @param {Array} versionArr2 版本2
  */
@@ -627,6 +628,18 @@ const random = (min, max, decimal) => {
   let result = Math.random() * (max - min) + min
   result = decimal ? result : parseInt(result)
   return result
+}
+
+/**
+ * 生成随机数字字母字符串
+ * @param {Number} len 字符串长度
+ */
+const randomString = (len) => {
+  let result = ''
+  while(result.length < len){
+    result += Math.random().toString(36).substr(2)
+  }
+  return result.substr(result.length - len)
 }
 
 /**
@@ -726,6 +739,7 @@ export default module.exports = {
   swapArray,
   compareVersions,
   random,
+  randomString,
   debounce,
   throttle,
   throttleV2
